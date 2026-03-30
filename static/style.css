@@ -1,0 +1,99 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: #0f0f11;
+  color: #e0ddd6;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.shell {
+  width: 700px;
+  height: 600px;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid #2a2a30;
+}
+
+.chat-area { display: flex; flex-direction: column; height: 100%; background: #0f0f11; }
+
+.chat-header {
+  padding: 14px 20px;
+  border-bottom: 1px solid #2a2a30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.logo { display: flex; align-items: center; gap: 8px; }
+.logo-icon { font-size: 20px; }
+.logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.05em; }
+.logo-text span { color: hsl(266, 90%, 61%); }
+
+.status { font-size: 12px; color: hsl(266, 90%, 61%); }
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.msg { display: flex; gap: 10px; max-width: 560px; }
+.msg.user { flex-direction: row-reverse; align-self: flex-end; }
+.msg-avatar { font-size: 18px; flex-shrink: 0; }
+
+.bubble { padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.6; }
+.msg.bot .bubble { background: #1a1a1f; border: 1px solid #2a2a30; }
+.msg.user .bubble { background: hsl(266, 90%, 61%)}
+.dots { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
+.dots span { width: 6px; height: 6px; background: hsl(266, 90%, 61%); border-radius: 50%; opacity: 0.5; }
+
+.input-bar {
+  padding: 14px 20px;
+  border-top: 1px solid #2a2a30;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.input-wrap {
+  flex: 1;
+  background: #1a1a1f;
+  border: 1px solid #2a2a30;
+  border-radius: 10px;
+}
+.input-wrap:focus-within { border-color: hsl(266, 90%, 61%); }
+
+textarea {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  outline: none;
+  color: #e0ddd6;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  padding: 10px 14px;
+  resize: none;
+  min-height: 42px;
+  max-height: 120px;
+}
+textarea::placeholder { color: #555; }
+
+.send-btn {
+  width: 42px;
+  height: 42px;
+  background: hsl(266, 90%, 61%);
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  color: #0f0f11;
+  cursor: pointer;
+}
+.send-btn:hover { opacity: 0.85; }

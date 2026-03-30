@@ -87,8 +87,8 @@ pares = [
       'Fato interessante: Mozart compôs sua primeira peça aos 5 anos de idade!']),
 
     (r'(Sair|Tchau|Adeus|Até mais|até logo)',
-     ['Até mais! Foi um prazer falar sobre música com você! 🎵',
-      'Tchau! Continue ouvindo boa música! 🎶']),
+     ['Até mais! Foi um prazer falar sobre música com você! ',
+      'Tchau! Continue ouvindo boa música!']),
 
     (r'(.*)', ['Desculpe, não entendi. Pode reformular a pergunta?',
                'Pode me explicar de outra forma? Estou aqui para falar sobre música!',

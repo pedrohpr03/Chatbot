@@ -5,53 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>ChatBotMusic</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
 </head>
 <body>
 <div class="shell">
-  <aside class="sidebar">
-    <div class="logo">
-      <div class="logo-icon">🎵</div>
-      <div class="logo-text">Chat<span>Bot</span>Music</div>
-    </div>
-
-    <div>
-      <p class="sidebar-label">Sugestões</p>
-      <div class="topics" id="topics">
-        <button class="topic-btn" onclick="sendQuick('Me recomende uma música')"><span class="icon">🎧</span> Recomendar música</button>
-        <button class="topic-btn" onclick="sendQuick('Me fale sobre o rock')"><span class="icon">🎸</span> O que é Rock?</button>
-        <button class="topic-btn" onclick="sendQuick('Me fale sobre o samba')"><span class="icon">🥁</span> O que é Samba?</button>
-        <button class="topic-btn" onclick="sendQuick('Quem é o Michael Jackson?')"><span class="icon">🕺</span> Michael Jackson</button>
-        <button class="topic-btn" onclick="sendQuick('Me conte uma curiosidade sobre música')"><span class="icon">💡</span> Curiosidade musical</button>
-        <button class="topic-btn" onclick="sendQuick('Me recomende uma banda')"><span class="icon">🎤</span> Recomendar banda</button>
-      </div>
-    </div>
-
-    <div class="vibe-bar">
-      <p>🎶 EM MODO MUSICAL</p>
-      <div class="equalizer">
-        <div class="bar"></div><div class="bar"></div><div class="bar"></div>
-        <div class="bar"></div><div class="bar"></div><div class="bar"></div>
-        <div class="bar"></div>
-      </div>
-    </div>
-  </aside>
-
   <div class="chat-area">
     <header class="chat-header">
-      <div class="chat-header-left">
-        <div class="bot-avatar">🎵</div>
-        <div class="bot-info">
-          <h2>ChatBotMusic</h2>
-          <div class="status">Online agora</div>
-        </div>
+      <div class="logo">
+        <div class="logo-text">Chat<span>Bot</span>Music</div>
       </div>
+      <div class="status">Online agora</div>
     </header>
 
     <div class="messages" id="messages">
       <div class="msg bot">
-        <div class="msg-avatar">🎵</div>
-        <div class="bubble">Olá! Bem-vindo ao <strong>ChatBotMusic</strong>! 🎶
-                            <br>Estou aqui para falar tudo sobre música. Pergunte sobre artistas, gêneros ou peça uma recomendação!</div>
+        <div class="bubble">Olá! Bem-vindo ao <strong>ChatBotMusic</strong>!
+                            <br>Vamos falar sobre música? Pergunte sobre artistas, gêneros ou peça uma recomendação!</div>
       </div>
     </div>
 
@@ -65,8 +34,8 @@
 </div>
 
 <script>
-  const input   = document.getElementById('user-input');
-  const msgBox  = document.getElementById('messages');
+  const input  = document.getElementById('user-input');
+  const msgBox = document.getElementById('messages');
 
   input.addEventListener('input', () => {
     input.style.height = 'auto';
@@ -83,8 +52,6 @@
 
     const avatar = document.createElement('div');
     avatar.className = 'msg-avatar';
-    avatar.textContent = role === 'bot' ? '🎵' : '🎤';
-
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
     bubble.innerHTML = text.replace(/\n/g, '<br>');
@@ -93,13 +60,12 @@
     wrap.appendChild(bubble);
     msgBox.appendChild(wrap);
     msgBox.scrollTop = msgBox.scrollHeight;
-    return wrap;
   }
 
   function addTyping() {
     const wrap = document.createElement('div');
-    wrap.className = 'msg bot typing';
-    wrap.innerHTML = `<div class="msg-avatar">🎵</div>
+    wrap.className = 'msg bot';
+    wrap.innerHTML = `<div class="msg-avatar"></div>
       <div class="bubble"><div class="dots"><span></span><span></span><span></span></div></div>`;
     msgBox.appendChild(wrap);
     msgBox.scrollTop = msgBox.scrollHeight;
@@ -129,11 +95,6 @@
       typing.remove();
       addMessage('Ops! Não consegui me conectar ao servidor. Verifique se o app.py está rodando.', 'bot');
     }
-  }
-
-  function sendQuick(text) {
-    input.value = text;
-    sendMessage();
   }
 </script>
 </body>
