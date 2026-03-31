@@ -31,9 +31,9 @@ body {
 .logo { display: flex; align-items: center; gap: 8px; }
 .logo-icon { font-size: 20px; }
 .logo-text { font-family: 'Bebas Neue', sans-serif; font-size: 20px; letter-spacing: 0.05em; }
-.logo-text span { color: hsl(266, 90%, 61%); }
+.logo-text span { color: hsl(266, 87%, 63%); }
 
-.status { font-size: 12px; color: hsl(266, 90%, 61%); }
+.status { font-size: 12px; color: hsl(266, 87%, 63%); }
 
 .messages {
   flex: 1;
@@ -50,9 +50,9 @@ body {
 
 .bubble { padding: 10px 14px; border-radius: 12px; font-size: 14px; line-height: 1.6; }
 .msg.bot .bubble { background: #1a1a1f; border: 1px solid #2a2a30; }
-.msg.user .bubble { background: hsl(266, 90%, 61%)}
+.msg.user .bubble { background: hsl(266, 87%, 63%)}
 .dots { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
-.dots span { width: 6px; height: 6px; background: hsl(266, 90%, 61%); border-radius: 50%; opacity: 0.5; }
+.dots span { width: 6px; height: 6px; background: hsl(266, 87%, 63%); border-radius: 50%; opacity: 0.5; }
 
 .input-bar {
   padding: 14px 20px;
@@ -68,7 +68,7 @@ body {
   border: 1px solid #2a2a30;
   border-radius: 10px;
 }
-.input-wrap:focus-within { border-color: hsl(266, 90%, 61%); }
+.input-wrap:focus-within { border-color: hsl(266, 87%, 63%); }
 
 textarea {
   display: block;
@@ -89,7 +89,7 @@ textarea::placeholder { color: #555; }
 .send-btn {
   width: 42px;
   height: 42px;
-  background: hsl(266, 90%, 61%);
+  background: hsl(266, 87%, 63%);
   border: none;
   border-radius: 10px;
   font-size: 16px;
