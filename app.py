@@ -11,88 +11,87 @@ pares = [
       'Oi! Estou aqui para falar tudo sobre música. O que você quer saber?']),
 
     (r'Qual (é o seu|o seu|seu) nome\??',
-     ['Meu nome é ChatBotMusic, seu assistente musical!']),
+     ['Meu nome é ChatBotMusic, seu assistente musical! Qual é o seu nome?']),
 
     (r'Qual (é a sua|a sua|sua) idade\??',
-     ['Eu sou um ChatBot, então não tenho idade! Mas nasci com muito amor pela música.']),
+     ['Eu sou um ChatBot, então não tenho idade! Você gosta de música há muito tempo?']),
 
     (r'(Você é|Voce é) (um robô|um bot|humano|real)\??',
-     ['Sou um ChatBot especializado em música! Não sou humano, mas entendo tudo sobre o mundo musical.']),
+     ['Sou um ChatBot especializado em música! Qual tipo de música você gosta?']),
 
     (r'(Qual é o seu|Qual seu|Seu) gênero (musical )?(favorito|preferido)\??',
-     ['Eu gosto de todos os gêneros musicais! De MPB ao heavy metal, cada um tem seu charme.']),
+     ['Eu gosto de todos os gêneros musicais! Qual é o seu gênero favorito?']),
 
     (r'(Você gosta|Voce gosta) de música\??',
-     ['Sim, eu adoro música! É minha razão de existir!']),
+     ['Sim, eu adoro música! Qual música você mais tem ouvido ultimamente?']),
 
     (r'(Qual (é o seu|seu)|Seu) artista favorito\??',
-     ['Eu gosto tanto de música que não consigo escolher um só! Há tantos artistas incríveis no mundo.']),
+     ['Eu gosto de muitos artistas! Qual é o seu artista favorito?']),
 
     (r'(Quem é|Quem foi) o? ?Michael Jackson\??',
-     ['Michael Jackson é o "Rei do Pop"! Foi um dos maiores artistas da história, com hits como "Thriller", "Billie Jean" e "Beat It".']),
+     ['Michael Jackson é o "Rei do Pop"! Você gosta das músicas dele?']),
 
     (r'(Quem é|Quem foi) o? ?Eminem\??',
-     ['Eminem é um rapper, compositor e produtor americano. Conhecido por suas letras impactantes, é considerado um dos maiores rappers de todos os tempos.']),
+     ['Eminem é um dos maiores rappers de todos os tempos! Você curte rap?']),
 
     (r'(Quem é|Quem foi) a? ?(Madonna|madonna)\??',
-     ['Madonna é a "Rainha do Pop"! Com décadas de carreira, revolucionou a música pop com hits como "Like a Virgin" e "Material Girl".']),
+     ['Madonna é a "Rainha do Pop"! Você gosta de música pop?']),
 
     (r'(Quem é|Quem foi) o? ?(The Beatles|Beatles)\??',
-     ['The Beatles foram uma das bandas mais influentes da história! John Lennon, Paul McCartney, George Harrison e Ringo Starr mudaram a música para sempre.']),
+     ['The Beatles foram extremamente influentes! Você já ouviu alguma música deles?']),
 
     (r'(Quem é|Quem foi) a? ?(Beyoncé|Beyonce)\??',
-     ['Beyoncé é uma das maiores artistas do mundo! Conhecida por sua voz poderosa e performances incríveis, com hits como "Halo" e "Crazy in Love".']),
+     ['Beyoncé é uma das maiores artistas do mundo! Você gosta das músicas dela?']),
 
     (r'(O que é|Me fale sobre) (o )?rap\??',
-     ['Rap é um estilo musical que combina rimas, ritmo e batidas. Surgiu nos Estados Unidos nos anos 70 e se tornou um dos gêneros mais populares do mundo!']),
+     ['Rap combina rimas, ritmo e batidas! Você gosta desse estilo?']),
 
     (r'(O que é|Me fale sobre) (o )?rock\??',
-     ['Rock é um gênero musical baseado em guitarras elétricas, bateria e baixo. Surgiu nos anos 50 e gerou subgêneros como heavy metal, punk e grunge!']),
+     ['Rock é baseado em guitarras e bateria! Você prefere rock clássico ou moderno?']),
 
     (r'(O que é|Me fale sobre) (a )?MPB\??',
-     ['MPB significa Música Popular Brasileira! É um gênero que mistura influências do samba, bossa nova, rock e outros estilos. Artistas como Caetano Veloso e Gilberto Gil são ícones da MPB.']),
+     ['MPB mistura várias influências brasileiras! Você costuma ouvir MPB?']),
 
     (r'(O que é|Me fale sobre) (o )?samba\??',
-     ['Samba é um ritmo genuinamente brasileiro! Nasceu no Rio de Janeiro e é símbolo da cultura do Brasil, muito presente no carnaval.']),
+     ['Samba é um ritmo brasileiro muito tradicional! Você gosta de samba?']),
 
     (r'(O que é|Me fale sobre) (o )?funk\??',
-     ['Funk é um gênero muito popular no Brasil! Nasceu nos subúrbios do Rio de Janeiro e mistura batidas eletrônicas com letras do cotidiano.']),
+     ['Funk é muito popular no Brasil! Você costuma ouvir funk?']),
 
     (r'(Me recomende|Recomende|Indique|Sugira) (uma )?música',
-     ['Que tal ouvir "Bohemian Rhapsody" do Queen? É uma obra-prima!',
-      'Recomendo "Thriller" do Michael Jackson, um clássico atemporal!',
-      'Que tal "Garota de Ipanema" de Tom Jobim? Uma joia da bossa nova!',
-      'Experimente "Lose Yourself" do Eminem, é impossível não se emocionar!']),
+     ['Que tal ouvir "Bohemian Rhapsody" do Queen? Você já ouviu essa música?',
+      'Recomendo "Thriller" do Michael Jackson! Você gosta desse estilo?',
+      'Que tal "Garota de Ipanema" de Tom Jobim? Você curte bossa nova?',
+      'Experimente "Lose Yourself" do Eminem! Você gosta de rap?']),
 
     (r'(Me recomende|Recomende|Indique|Sugira) (uma )?banda',
-     ['O Queen é uma escolha incrível! Freddie Mercury era um gênio.',
-      'Experimente os Beatles, eles revolucionaram a música!',
-      'Que tal os Led Zeppelin? Rock puro e poderoso!']),
+     ['O Queen é uma escolha incrível! Você gosta de rock?',
+      'Experimente os Beatles! Você já ouviu alguma música deles?',
+      'Que tal Led Zeppelin? Você prefere rock mais pesado?']),
 
     (r'Estou (triste|chateado|mal|deprimido)',
-     ['Para animar o dia nada melhor do que ouvir uma boa música! Que tal uma playlist animada?',
-      'A música tem o poder de curar! Tente ouvir algo que te faça sorrir.']),
+     ['A música pode animar! Quer que eu recomende algo animado?',
+      'Que tal ouvir algo alegre? Prefere pop ou rock?']),
 
     (r'Estou (feliz|animado|bem|ótimo)',
-     ['Que ótimo! Aproveite para ouvir sua música favorita e curtir ainda mais o dia!',
-      'Felicidade combina muito com boa música! Bote um som e curta!']),
+     ['Que ótimo! Quer uma recomendação para comemorar?',
+      'Felicidade combina com música! Quer que eu sugira algo?']),
 
     (r'Estou (cansado|com sono|exausto)',
-     ['Que tal uma música calma para relaxar? Jazz ou bossa nova funcionam muito bem!',
-      'Música suave é ótima para descansar. Tente ouvir algo instrumental!']),
+     ['Que tal uma música calma? Prefere instrumental ou lo-fi?',
+      'Música suave ajuda a relaxar! Quer uma recomendação?']),
 
     (r'(Me conte|Sabia que|Curiosidade|Fato) (sobre )?música',
-     ['Sabia que ouvir música ativa diversas áreas do cérebro simultaneamente? É uma das atividades mais complexas para o cérebro humano!',
-      'Curiosidade: a canção "Happy Birthday to You" foi a mais reconhecida do século XX, segundo o Guinness World Records!',
-      'Fato interessante: Mozart compôs sua primeira peça aos 5 anos de idade!']),
+     ['Sabia que ouvir música ativa várias áreas do cérebro? Você gosta de curiosidades?',
+      'Mozart compôs sua primeira peça aos 5 anos! Quer saber outra curiosidade?']),
 
     (r'(Sair|Tchau|Adeus|Até mais|até logo)',
-     ['Até mais! Foi um prazer falar sobre música com você! ',
-      'Tchau! Continue ouvindo boa música!']),
+     ['Até mais! Quer conversar novamente depois?',
+      'Tchau! Quer voltar para falar mais sobre música?']),
 
     (r'(.*)', ['Desculpe, não entendi. Pode reformular a pergunta?',
-               'Pode me explicar de outra forma? Estou aqui para falar sobre música!',
-               'Não entendi bem. Tente perguntar sobre artistas, gêneros musicais ou recomendações!'])
+               'Pode me explicar de outra forma?',
+               'Não entendi bem. Quer perguntar sobre artistas ou gêneros musicais?'])
 ]
 
 reflexoes = {
