@@ -6,10 +6,9 @@ from nltk.chat.util import Chat, reflections
 app = Flask(__name__)
 
 pares = [
-<<<<<<< HEAD
     # 1. Olá
     (r'Ol[aá]|Oi|E a[íi]|Oi tudo bem\??|Ol[aá] tudo bem\??|Bom dia|Boa tarde|Boa noite',
-     ['Olá! Seja bem-vindo ao ChatBotMusic! Aqui a gente só fala de música. Qual ritmo te move mais?']),
+     ['Olá! Seja bem-vindo ao ChatBotMusic! Aqui a gente só fala de música. Qual ritmo te move mais: rap, rock, pop ou outro?']),
 
     # 2. Rap
     (r'(.*)(rap|Rap|RAP)(.*)',
@@ -42,7 +41,7 @@ pares = [
     (r'(.*)estilo (dele|do michael|do michael jackson)(.*)',
      ['Ótima pedida! Se você curte o groove e a energia vocal do Michael, precisa ouvir "Treasure" do Bruno Mars ou "I Feel It Coming" do The Weeknd. Ambos bebem muito da fonte do Rei do Pop! Curtiu ou quer que eu te indique algo de outro estilo agora?']),
 
-    # --- NOVO FLUXO DE ROCK ---
+    # Rock
     # 10. Vamos falar de rock
     (r'(.*)(vamos falar de rock|falar sobre rock|falar de rock|quero falar de rock)(.*)',
      ['Excelente escolha! O rock tem muita atitude e história. Tem alguma banda que você quer saber mais, tipo o Nirvana?']),
@@ -63,7 +62,7 @@ pares = [
     (r'(N[aã]o|nao|N[aã]o sei|nao sei|Talvez|talvez)',
      ['Sem problema! Me conta um pouco mais sobre o que você gosta de sentir quando ouve música. É para animar, relaxar, refletir? Assim consigo te indicar algo mais certeiro.']),
 
-    # Regra de Rock genérica (caso o usuário diga apenas "rock" e não "vamos falar de rock")
+    # RRock genérico (caso o usuário diga apenas "rock" e não "vamos falar de rock")
     (r'(.*)(rock|Rock|ROCK)(.*)',
      ['Rock é paixão pura! De clássico a alternativo, tem muita coisa boa. Você prefere algo mais antigo, tipo anos 70-80, ou um rock mais atual?']),
 
@@ -71,63 +70,6 @@ pares = [
     (r'(.*)',
      ['Hmm, não entendi bem. Me conta: você prefere rap, rock, pop ou música brasileira? Assim consigo te ajudar melhor!',
       'Pode me dar mais uma dica? Me diz um artista ou gênero que você curte e eu te mostro o caminho!'])
-=======
-    (r'Olá|Oi|E aí|Oi tudo bem\??|Olá tudo bem\??',
-     ['Olá! Bem-vindo ao ChatBotMusic! Você gosta de música? (Você gosta de música?)',
-      'Oi! Estou aqui para falar sobre música! Qual é o seu gênero favorito? (Qual é o seu gênero favorito?)']),
-
-    (r'Qual (é o seu|o seu|seu) nome\??',
-     ['Meu nome é ChatBotMusic! Você gosta de música? (Você gosta de música?)']),
-
-    (r'(Qual é o seu|Qual seu|Seu) gênero (musical )?(favorito|preferido)\??',
-     ['Eu gosto de todos os gêneros musicais! Quer saber mais sobre rap? (O que é rap?)']),
-
-    (r'(Você gosta|Voce gosta) de música\??',
-     ['Sim, eu adoro música! Qual é o seu artista favorito? (Qual é o seu artista favorito?)']),
-
-    (r'(Qual (é o seu|seu)|Seu) artista favorito\??',
-     ['Há muitos artistas incríveis! Quer uma recomendação? (Me recomende uma música)']),
-
-    (r'(Quem é|Quem foi) o? ?Michael Jackson\??',
-     ['Michael Jackson é o "Rei do Pop"! Você já ouviu falar sobre funk? (O que é funk?)']),
-
-    (r'(Quem é|Quem foi) o? ?Eminem\??',
-     ['Eminem é um dos maiores rappers! Quer saber mais sobre rap? (O que é rap?)']),
-
-    (r'(Quem é|Quem foi) a? ?(Madonna|madonna)\??',
-     ['Madonna é a "Rainha do Pop"! Você gosta de pop? (Qual é o seu gênero favorito?)']),
-
-    (r'(Quem é|Quem foi) o? ?(The Beatles|Beatles)\??',
-     ['The Beatles foram muito influentes! Quer conhecer rock? (O que é rock?)']),
-
-    (r'(Quem é|Quem foi) a? ?(Beyoncé|Beyonce)\??',
-     ['Beyoncé é uma grande artista! Quer uma recomendação? (Me recomende uma música)']),
-
-    (r'(O que é|Me fale sobre) (o )?rap\??',
-     ['Rap combina rimas e batidas! Quer uma sugestão? (Me recomende uma música)']),
-
-    (r'(O que é|Me fale sobre) (o )?rock\??',
-     ['Rock é baseado em guitarras! Quer uma banda? (Me recomende uma banda)']),
-
-    (r'(O que é|Me fale sobre) (a )?MPB\??',
-     ['MPB mistura vários estilos! Quer saber sobre samba? (O que é samba?)']),
-
-    (r'(O que é|Me fale sobre) (o )?samba\??',
-     ['Samba é um ritmo brasileiro! Quer saber sobre funk? (O que é funk?)']),
-
-    (r'(O que é|Me fale sobre) (o )?funk\??',
-     ['Funk é muito popular no Brasil! Quer uma recomendação? (Me recomende uma música)']),
-
-    (r'(Me recomende|Recomende|Indique|Sugira) (uma )?música',
-     ['Que tal "Thriller" do Michael Jackson? Quer outra? (Me recomende uma banda)',
-      'Experimente "Lose Yourself"! Quer mais? (Me recomende uma música)']),
-
-    (r'(Me recomende|Recomende|Indique|Sugira) (uma )?banda',
-     ['Experimente Queen! Quer uma música deles? (Me recomende uma música)',
-      'Que tal Beatles? Quer outra banda? (Me recomende uma banda)']),
-
-    (r'(.*)', ['Não entendi bem. Quer falar sobre artistas? (Qual é o seu artista favorito?)',
-               'Pode reformular? Quer falar sobre gêneros? (Qual é o seu gênero favorito?)'])
 ]
 
 reflexoes = {
