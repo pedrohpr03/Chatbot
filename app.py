@@ -128,7 +128,6 @@ pares = [
 
     (r'(.*)', ['Não entendi bem. Quer falar sobre artistas? (Qual é o seu artista favorito?)',
                'Pode reformular? Quer falar sobre gêneros? (Qual é o seu gênero favorito?)'])
->>>>>>> 143cc58ced24f21248eb2b74cbcac80bfbd43aed
 ]
 
 reflexoes = {
