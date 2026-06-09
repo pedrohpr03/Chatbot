@@ -1,8 +1,9 @@
 """ChatBotMusic — servidor Flask.
 
 Orquestra as peças: detecta a intenção (intents), busca no Spotify
-(spotify_client), formata a resposta (formatters) ou cai no chatbot
-de padrões (nltk_bot).
+(spotify_client), formata a resposta (formatters). Sem resultado no Spotify,
+conversa via LLM (llm_bot/Gemini); o chatbot de padrões (nltk_bot) é a
+última opção, só quando o LLM não consegue ajudar.
 """
 from flask import Flask, request, jsonify, render_template
 import os
@@ -12,6 +13,7 @@ import logging
 from src import spotify_client as spotify
 from src import formatters as fmt
 from src import intents
+from src import llm_bot
 from src import nltk_bot
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -42,6 +44,20 @@ def chat():
             if tracks:
                 return jsonify({'response': fmt.tracks(tracks, payload)})
 
+        elif intent == "artist_info":
+            # "quem é X" → resumo em texto (LLM) + foto do perfil (Spotify)
+            perfil = spotify.search_artist(payload)          # nome canônico + foto
+            nome   = perfil["name"] if perfil else payload
+            resumo = llm_bot.resumo_artista(nome)
+            if resumo:
+                imagem = perfil["image"] if perfil else None
+                return jsonify({'response': fmt.artist_summary(nome, resumo, imagem)})
+            # LLM indisponível (ou artista desconhecido) → tenta o card do Spotify
+            if perfil:
+                completo = spotify.get_artist_profile(nome)
+                if completo:
+                    return jsonify({'response': fmt.artist(completo)})
+
         elif intent == "artist":
             info = spotify.get_artist_profile(payload)
             if info:
@@ -71,8 +87,15 @@ def chat():
     except Exception:
         logger.exception("Erro ao consultar o Spotify (intent=%s)", intent)
 
-    # ── 2ª tentativa: chatbot de padrões (NLTK) ───────────
-    # Sem resultado (ou sem credenciais) → cai no chatbot normal
+    # ── 2ª tentativa: LLM (Gemini) ────────────────────────
+    # Sem resultado no Spotify → conversa livre sobre música via LLM
+    resposta_llm = llm_bot.responder(user_message)
+    if resposta_llm:
+        return jsonify({'response': resposta_llm})
+
+    # ── 3ª tentativa: chatbot de padrões (NLTK) — última opção ──
+    # Só chega aqui se o LLM não conseguiu ajudar (sem chave, erro
+    # de API ou mensagem fora do tema musical)
     return jsonify({'response': nltk_bot.responder(user_message)})
 
 

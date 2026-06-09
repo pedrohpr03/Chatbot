@@ -64,6 +64,16 @@ def artist(info: dict) -> str:
     return "".join(partes)
 
 
+def artist_summary(nome: str, resumo: str, image_url: str | None = None) -> str:
+    """Resumo em texto do artista (gerado pelo LLM) + foto do perfil, se houver."""
+    texto = _e(resumo).replace("\n", "<br>")
+    return (
+        _imagem(image_url) +
+        f"🎤 <b>{_e(nome)}</b><br><br>"
+        f"{texto}"
+    )
+
+
 def album(info: dict) -> str:
     if not info:
         return "Álbum não encontrado. Tente outro nome!"

@@ -55,7 +55,8 @@ def detect(message: str) -> tuple[str | None, str | None]:
     if m:
         termo = m.group(1).strip(" ?!.")
         if termo and termo.lower() not in NAO_ARTISTAS:
-            return "artist", termo
+            # Pergunta natural → resumo em texto (LLM) + foto, e não o card
+            return "artist_info", termo
 
     # Discografia: "álbuns do X", "discografia de X", "discos do X"
     m = re.search(
