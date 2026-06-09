@@ -1,0 +1,20 @@
+# Segredos
+.env
+
+# Ambiente virtual
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Testes
+.pytest_cache/
+
+# NLTK data baixado localmente
+nltk_data/
+
+# Configuração local do Claude Code
+.claude/
