@@ -40,10 +40,12 @@ def detect(message: str) -> tuple[str | None, str | None]:
     if m and m.group(1) in ATIVIDADES:
         return "playlist", m.group(1)
 
-    # Buscar faixa: "buscar música X", "toca X", "ouvir X"
+    # Buscar/tocar faixa: "buscar música X", "toca/toque/tocar X", "põe X",
+    # "coloca X", "bota X", "ouvir X", "escutar X"
     m = re.search(
         r"(?:buscar?\s+(?:a\s+)?(?:música|musica|faixa|track|song)\s+|"
-        r"toca[r]?\s+|ouvir\s+|escutar\s+)(.+)",
+        r"(?:toca[r]?|toque)\s+|p[õo]e\s+|coloca[r]?\s+|bota[r]?\s+|"
+        r"ouvir\s+|escutar\s+)(.+)",
         msg,
     )
     if m:

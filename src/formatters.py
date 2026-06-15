@@ -24,11 +24,20 @@ def _imagem(url: str | None, largura: int = 200) -> str:
     )
 
 
+def track(t: dict) -> str:
+    """Exibe uma única faixa — usado no comando 'toque/toca X'."""
+    return (
+        f"<b>{_e(t['name'])}</b> — {_e(t['artist'])}<br>"
+        f"{_e(t['album'])}"
+        f" &nbsp;<a href='{_e(t['url'])}' target='_blank'>▶ Ouvir</a>"
+    )
+
+
 def tracks(items: list[dict], query: str) -> str:
     if not items:
         return f"Não encontrei nada para <b>{_e(query)}</b>. Tente outro nome!"
 
-    linhas = [f"🎵 Resultados para <b>{_e(query)}</b>:<br>"]
+    linhas = [f"Resultados para <b>{_e(query)}</b>:<br>"]
     for i, t in enumerate(items, 1):
         linhas.append(
             f"{i}. <b>{_e(t['name'])}</b> — {_e(t['artist'])}<br>"
@@ -51,7 +60,7 @@ def artist(info: dict, resumo: str | None = None) -> str:
 
     partes = [
         _imagem(info.get("image")) +
-        f"🎤 <b>{_e(info['name'])}</b><br>"
+        f"<b>{_e(info['name'])}</b><br>"
         f"{bloco_resumo}"
         f"<a href='{_e(info['url'])}' target='_blank'> Ver perfil</a>"
     ]
@@ -77,7 +86,7 @@ def artist_summary(nome: str, resumo: str, image_url: str | None = None) -> str:
     texto = _e(resumo).replace("\n", "<br>")
     return (
         _imagem(image_url) +
-        f"🎤 <b>{_e(nome)}</b><br><br>"
+        f"<b>{_e(nome)}</b><br><br>"
         f"{texto}"
     )
 

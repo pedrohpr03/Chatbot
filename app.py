@@ -46,7 +46,7 @@ def _gerar_resposta(user_message: str, historico: list[dict]) -> tuple[str, str]
         if intent == "track":
             tracks = spotify.search_track(payload)
             if tracks:
-                return fmt.tracks(tracks, payload), "spotify"
+                return fmt.track(tracks[0]), "spotify"
 
         elif intent == "artist_info":
             perfil  = spotify.search_artist(payload)
