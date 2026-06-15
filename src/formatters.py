@@ -38,13 +38,21 @@ def tracks(items: list[dict], query: str) -> str:
     return "<br>".join(linhas)
 
 
-def artist(info: dict) -> str:
+def artist(info: dict, resumo: str | None = None) -> str:
     if not info:
         return "Artista não encontrado."
+
+    # `resumo` (texto curto da LLM) é opcional: a base do Spotify não guarda
+    # biografia, então quando há um, ele apresenta o artista acima do conteúdo.
+    bloco_resumo = ""
+    if resumo:
+        texto = _e(resumo).replace("\n", "<br>")
+        bloco_resumo = f"<br>{texto}<br>"
 
     partes = [
         _imagem(info.get("image")) +
         f"🎤 <b>{_e(info['name'])}</b><br>"
+        f"{bloco_resumo}"
         f"<a href='{_e(info['url'])}' target='_blank'> Ver perfil</a>"
     ]
 

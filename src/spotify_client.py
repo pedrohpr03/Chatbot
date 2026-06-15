@@ -8,6 +8,7 @@ import re
 import time
 import base64
 import logging
+import unicodedata
 
 import requests
 from dotenv import load_dotenv
@@ -106,6 +107,31 @@ def _api_get(path: str, params: dict | None = None, _retry: bool = True) -> dict
     return resp.json()
 
 
+# ─ Comparação de nomes
+def _normaliza_nome(texto: str) -> str:
+    """Reduz um nome a minúsculas, sem acentos e só alfanumérico (para comparar)."""
+    nfkd = unicodedata.normalize("NFKD", texto.lower())
+    sem_acento = "".join(c for c in nfkd if not unicodedata.combining(c))
+    return re.sub(r"[^a-z0-9]+", "", sem_acento)
+
+
+def nome_corresponde(nome_spotify: str, consulta: str) -> bool:
+    """True se o artista devolvido pelo Spotify realmente corresponde à consulta.
+
+    A busca do Spotify é "fuzzy" e devolve algum artista para quase qualquer
+    texto (ex.: 'vinicius junior' → 'Rafinha RSQ'). Comparando os nomes
+    normalizados evitamos exibir um perfil que não tem nada a ver com o pedido.
+    """
+    a = _normaliza_nome(nome_spotify)
+    b = _normaliza_nome(consulta)
+    if not a or not b:
+        return False
+    if a == b:
+        return True
+    # tolera variações como "banda queen" ⊃ "queen"
+    return len(a) >= 3 and len(b) >= 3 and (a in b or b in a)
+
+
 # ─ Buscas
 def search_track(query: str) -> list[dict] | None:
     """Busca até 3 faixas no Spotify pelo nome."""
@@ -129,8 +155,13 @@ def search_track(query: str) -> list[dict] | None:
 
 
 def search_artist(query: str) -> dict | None:
-    """Busca um artista pelo nome e retorna seus dados básicos."""
-    data = _api_get("/search", {"q": query, "type": "artist", "limit": 1})
+    """Busca um artista pelo nome e retorna seus dados básicos.
+
+    O Spotify às vezes ranqueia outro artista no topo (ex.: 'anitta' devolvia
+    'Luísa Sonza' como 1º resultado), então pedimos vários candidatos e
+    preferimos aquele cujo nome realmente corresponde à busca.
+    """
+    data = _api_get("/search", {"q": query, "type": "artist", "limit": PAGE_SIZE, "market": MARKET})
     if not data:
         return None
 
@@ -138,7 +169,7 @@ def search_artist(query: str) -> dict | None:
     if not items:
         return None
 
-    artist = items[0]
+    artist = next((a for a in items if nome_corresponde(a["name"], query)), items[0])
     return {
         "id":    artist["id"],
         "name":  artist["name"],

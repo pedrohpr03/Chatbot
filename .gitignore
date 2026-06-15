@@ -16,5 +16,3 @@ __pycache__/
 # NLTK data baixado localmente
 nltk_data/
 
-# Configuração local do Claude Code
-.claude/

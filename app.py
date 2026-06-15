@@ -1,12 +1,6 @@
-"""ChatBotMusic — servidor Flask.
-
-Orquestra as peças: detecta a intenção (intents), busca no Spotify
-(spotify_client), formata a resposta (formatters). Sem resultado no Spotify,
-conversa via LLM (llm_bot/Gemini); o chatbot de padrões (nltk_bot) é a
-última opção, só quando o LLM não consegue ajudar.
-"""
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, session
 import os
+import uuid
 import random
 import logging
 
@@ -15,16 +9,88 @@ from src import formatters as fmt
 from src import intents
 from src import llm_bot
 from src import nltk_bot
+from src import memory
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 
+app.secret_key = os.getenv("FLASK_SECRET_KEY", "chatbotmusic-dev-secret")
+
 
 @app.route('/')
 def index():
     return render_template('index.html')
+
+
+def _sessao_id() -> str:
+    """Id da sessão do usuário (cookie assinado). Cria um se ainda não houver."""
+    sid = session.get("sid")
+    if not sid:
+        sid = uuid.uuid4().hex
+        session["sid"] = sid
+    return sid
+
+
+def _gerar_resposta(user_message: str, historico: list[dict]) -> str:
+    """Decide a resposta: Spotify (base) → LLM com memória → NLTK."""
+    # ── 1ª tentativa: Spotify ─────────────────────────────
+    intent, payload = intents.detect(user_message)
+
+    try:
+        if intent == "track":
+            tracks = spotify.search_track(payload)
+            if tracks:
+                return fmt.tracks(tracks, payload)
+
+        elif intent == "artist_info":
+            perfil  = spotify.search_artist(payload)
+            na_base = perfil is not None and spotify.nome_corresponde(perfil["name"], payload)
+            if na_base:
+                completo = spotify.get_artist_profile(perfil["name"])
+                if completo:
+                    resumo = llm_bot.resumo_artista(completo["name"])
+                    return fmt.artist(completo, resumo)
+
+            resumo = llm_bot.resumo_artista(payload.title())
+            if resumo:
+                return fmt.artist_summary(payload.title(), resumo)
+
+        elif intent == "artist":
+            info = spotify.get_artist_profile(payload)
+            if info:
+                return fmt.artist(info)
+
+        elif intent == "album":
+            info = spotify.search_album(payload)
+            if info:
+                return fmt.album(info)
+
+        elif intent == "discography":
+            info = spotify.get_discography(payload)
+            if info:
+                return fmt.discography(info)
+
+        elif intent == "playlist":
+            playlists = spotify.search_playlists(payload)
+            if playlists:
+                return fmt.playlists(playlists, payload)
+
+        elif intent == "recommendations":
+            seed = payload or random.choice(spotify.SEED_ARTISTS)
+            tracks = spotify.get_recommendations(seed)
+            if tracks:
+                return fmt.recommendations(tracks, seed)
+
+    except Exception:
+        logger.exception("Erro ao consultar o Spotify (intent=%s)", intent)
+
+    resposta_llm = llm_bot.responder(user_message, historico)
+    if resposta_llm:
+        return resposta_llm
+
+    return nltk_bot.responder(user_message)
 
 
 @app.route('/chat', methods=['POST'])
@@ -35,71 +101,25 @@ def chat():
     if not user_message:
         return jsonify({'response': 'Mensagem vazia!'})
 
-    # ── 1ª tentativa: Spotify ─────────────────────────────
-    intent, payload = intents.detect(user_message)
+    sid       = _sessao_id()
+    historico = memory.get(sid)
 
-    try:
-        if intent == "track":
-            tracks = spotify.search_track(payload)
-            if tracks:
-                return jsonify({'response': fmt.tracks(tracks, payload)})
+    resposta = _gerar_resposta(user_message, historico)
 
-        elif intent == "artist_info":
-            # "quem é X" → resumo em texto (LLM) + foto do perfil (Spotify)
-            perfil = spotify.search_artist(payload)          # nome canônico + foto
-            nome   = perfil["name"] if perfil else payload
-            resumo = llm_bot.resumo_artista(nome)
-            if resumo:
-                imagem = perfil["image"] if perfil else None
-                return jsonify({'response': fmt.artist_summary(nome, resumo, imagem)})
-            # LLM indisponível (ou artista desconhecido) → tenta o card do Spotify
-            if perfil:
-                completo = spotify.get_artist_profile(nome)
-                if completo:
-                    return jsonify({'response': fmt.artist(completo)})
+    # Guarda o turno (usuário + bot) para dar contexto às próximas mensagens.
+    memory.registrar(sid, user_message, resposta)
+    return jsonify({'response': resposta})
 
-        elif intent == "artist":
-            info = spotify.get_artist_profile(payload)
-            if info:
-                return jsonify({'response': fmt.artist(info)})
 
-        elif intent == "album":
-            info = spotify.search_album(payload)
-            if info:
-                return jsonify({'response': fmt.album(info)})
-
-        elif intent == "discography":
-            info = spotify.get_discography(payload)
-            if info:
-                return jsonify({'response': fmt.discography(info)})
-
-        elif intent == "playlist":
-            playlists = spotify.search_playlists(payload)
-            if playlists:
-                return jsonify({'response': fmt.playlists(playlists, payload)})
-
-        elif intent == "recommendations":
-            seed = payload or random.choice(spotify.SEED_ARTISTS)
-            tracks = spotify.get_recommendations(seed)
-            if tracks:
-                return jsonify({'response': fmt.recommendations(tracks, seed)})
-
-    except Exception:
-        logger.exception("Erro ao consultar o Spotify (intent=%s)", intent)
-
-    # ── 2ª tentativa: LLM (Gemini) ────────────────────────
-    # Sem resultado no Spotify → conversa livre sobre música via LLM
-    resposta_llm = llm_bot.responder(user_message)
-    if resposta_llm:
-        return jsonify({'response': resposta_llm})
-
-    # ── 3ª tentativa: chatbot de padrões (NLTK) — última opção ──
-    # Só chega aqui se o LLM não conseguiu ajudar (sem chave, erro
-    # de API ou mensagem fora do tema musical)
-    return jsonify({'response': nltk_bot.responder(user_message)})
+@app.route('/reset', methods=['POST'])
+def reset():
+    sid = session.get("sid")
+    if sid:
+        memory.limpar(sid)
+    return jsonify({'response': 'Conversa reiniciada!'})
 
 
 if __name__ == '__main__':
-    # debug ligado só se FLASK_DEBUG estiver definido (ex.: FLASK_DEBUG=1)
+
     debug = os.getenv("FLASK_DEBUG", "").lower() in ("1", "true", "yes")
     app.run(debug=debug)

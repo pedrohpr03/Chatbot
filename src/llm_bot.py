@@ -14,11 +14,8 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-# Modelo hospedado no HuggingFace (ungated, multilíngue). Troque via HF_MODEL.
-_MODEL = os.getenv("HF_MODEL", "Qwen/Qwen2.5-7B-Instruct")
+_MODEL = os.getenv("HF_MODEL", "meta-llama/Llama-3.3-70B-Instruct")
 
-# Sentinela: o modelo devolve exatamente isto quando a mensagem não é sobre
-# música. Assim detectamos "não achei nada relacionado" e caímos no NLTK.
 _SEM_RESPOSTA = "__SEM_RESPOSTA__"
 
 _SYSTEM_PROMPT = (
@@ -26,12 +23,15 @@ _SYSTEM_PROMPT = (
     "Converse em português do Brasil, de forma curta (no máximo 3 frases), "
     "calorosa e empolgada. Seu tema central é música: artistas, bandas, "
     "gêneros, álbuns, história e curiosidades musicais.\n"
-    "Você PODE comentar de forma leve e superficial sobre qualquer outro "
-    "assunto (carros, futebol, filmes, comida, etc.), sem se aprofundar, e "
-    "deve SEMPRE tentar puxar a conversa de volta para música — por exemplo, "
-    "ligando o tema a uma banda, música, trilha sonora ou gênero. "
-    "Ex.: se perguntarem sobre carros, fale uma frase geral e emende com "
-    "músicas ou artistas que falam de carros/estrada.\n"
+    "REGRA DE OURO: nunca invente fatos. Se perguntarem sobre alguém que NÃO é "
+    "músico (jogador, ator, cientista, político, influenciador) ou sobre outro "
+    "assunto (carros, futebol, filmes, comida, etc.), dê UMA informação correta "
+    "e breve sobre quem ou o que é e então puxe a conversa de volta para a "
+    "música — ligando a uma banda, gênero, trilha sonora ou artista. "
+    "NUNCA diga que um não-músico é cantor ou compositor; se não souber quem é "
+    "a pessoa, admita com leveza e convide a falar de música.\n"
+    "Ex.: 'quem é Vinícius Júnior?' → 'É um jogador de futebol brasileiro! "
+    "Falando em craques, que tal conhecer o samba do Seu Jorge?'\n"
     "Responda APENAS com o texto exato "
     f"{_SEM_RESPOSTA} (sem mais nada) somente quando a pergunta for muito "
     "específica ou técnica sobre um tema fora de música, daquelas que exigem "
@@ -40,7 +40,22 @@ _SYSTEM_PROMPT = (
     "Nesses casos não invente nem chute: apenas devolva a sentinela."
 )
 
-# Inicialização preguiçosa: o cliente só é criado se houver token de API.
+# Regra: decide músico ou não Antes de responder,
+# com exemplos nos dois sentidos. Sem isso, modelos menores inventam uma
+# biografia musical para qualquer nome (ex.: tratam um jogador como cantor)
+_RESUMO_SYS = (
+    "Você avalia um nome e decide se é de um MÚSICO ou BANDA (cantor, rapper, "
+    "DJ, compositor, instrumentista ou grupo musical).\n"
+    "• Se NÃO for da música (atleta, ator, político, influenciador, personagem) "
+    f"ou se você não reconhecer como músico, responda APENAS {_SEM_RESPOSTA}.\n"
+    "• Se for músico/banda, escreva um resumo REAL de 2 a 4 frases, em português "
+    "do Brasil, sobre a carreira musical, o estilo/gênero e a importância — texto "
+    "corrido, sem listas e sem títulos. Não copie os exemplos abaixo.\n"
+    f"Exemplos: Vinícius Júnior (jogador) → {_SEM_RESPOSTA}; Neymar (jogador) → "
+    f"{_SEM_RESPOSTA}; Anitta (cantora) → escreva o resumo; Coldplay (banda) → "
+    "escreva o resumo."
+)
+
 _client = None
 _init_tentada = False
 
@@ -67,8 +82,14 @@ def _get_client():
     return _client
 
 
-def _chat(system: str | None, user: str, temperature: float, max_tokens: int) -> str | None:
-    """Faz uma chamada de chat ao modelo. Retorna o texto ou None em caso de erro."""
+def _chat(system: str | None, user: str, temperature: float, max_tokens: int,
+          history: list[dict] | None = None) -> str | None:
+    """Faz uma chamada de chat ao modelo. Retorna o texto ou None em caso de erro.
+
+    `history` (opcional) são os turnos anteriores da conversa, no formato
+    {"role": "user"/"assistant", "content": ...}, inseridos entre o system e a
+    mensagem atual para dar memória à conversa.
+    """
     client = _get_client()
     if client is None:
         return None
@@ -76,6 +97,8 @@ def _chat(system: str | None, user: str, temperature: float, max_tokens: int) ->
     mensagens = []
     if system:
         mensagens.append({"role": "system", "content": system})
+    if history:
+        mensagens.extend(history)
     mensagens.append({"role": "user", "content": user})
 
     try:
@@ -110,26 +133,21 @@ def resumo_artista(nome: str) -> str | None:
     Devolve um texto de 2 a 4 frases, ou None se o LLM não estiver disponível
     ou não conhecer o artista — nesses casos o app tenta outra alternativa.
     """
-    prompt = (
-        f"Escreva um resumo curto (2 a 4 frases), em português do Brasil, sobre o "
-        f"artista ou banda musical '{nome}'. Foque na carreira musical, no estilo ou "
-        f"gênero e na importância dele. Use texto corrido, sem listas e sem títulos. "
-        f"Se você não conhecer esse artista musical, responda APENAS com {_SEM_RESPOSTA}."
-    )
-    texto = _chat(None, prompt, temperature=0.6, max_tokens=400)
+    texto = _chat(_RESUMO_SYS, f"Nome a avaliar: '{nome}'", temperature=0.3, max_tokens=400)
     if not texto or _eh_sentinela(texto):
         return None
     return texto
 
 
-def responder(message: str) -> str | None:
-    """Resposta do LLM sobre música.
+def responder(message: str, history: list[dict] | None = None) -> str | None:
+    """Resposta do LLM sobre música, com memória opcional da conversa.
 
-    Devolve o texto da resposta, ou None quando o LLM não pode ajudar
-    (sem token, erro de API, ou mensagem fora do tema musical) — nesses
-    casos o app deve cair no chatbot de padrões (NLTK).
+    `history` são os turnos anteriores (lista de mensagens) e permite
+    follow-ups com contexto. Devolve o texto da resposta, ou None quando o
+    LLM não pode ajudar (sem token, erro de API, ou mensagem fora do tema
+    musical) — nesses casos o app deve cair no chatbot de padrões (NLTK).
     """
-    texto = _chat(_SYSTEM_PROMPT, message, temperature=0.7, max_tokens=500)
+    texto = _chat(_SYSTEM_PROMPT, message, temperature=0.7, max_tokens=500, history=history)
     if not texto or _eh_sentinela(texto):
         return None
     return texto
