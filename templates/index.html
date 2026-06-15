@@ -46,7 +46,14 @@
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   });
 
-  function addMessage(text, role) {
+  const ORIGENS = {
+    'spotify':     'SPOTIFY',
+    'spotify+llm': 'SPOTIFY + LLM',
+    'llm':         'LLM',
+    'nltk':        'NLTK',
+  };
+
+  function addMessage(text, role, origem) {
     const wrap = document.createElement('div');
     wrap.className = `msg ${role}`;
 
@@ -55,6 +62,14 @@
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
     bubble.innerHTML = text.replace(/\n/g, '<br>');
+
+    const rotulo = ORIGENS[origem];
+    if (role === 'bot' && rotulo) {
+      const tag = document.createElement('div');
+      tag.className = 'origem-tag';
+      tag.textContent = '[ ' + rotulo + ' ]';
+      bubble.appendChild(tag);
+    }
 
     wrap.appendChild(avatar);
     wrap.appendChild(bubble);
@@ -90,7 +105,7 @@
       });
       const data = await res.json();
       typing.remove();
-      addMessage(data.response, 'bot');
+      addMessage(data.response, 'bot', data.origem);
     } catch (err) {
       typing.remove();
       addMessage('Ops! Não consegui me conectar ao servidor. Verifique se o app.py está rodando.', 'bot');

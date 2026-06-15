@@ -57,6 +57,21 @@ body {
 .dots { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
 .dots span { width: 6px; height: 6px; background: hsl(266, 87%, 63%); border-radius: 50%; opacity: 0.5; }
 
+.origem-tag {
+  display: block;
+  text-align: right;
+  margin-top: 6px;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+  color: #1DB954;
+}
+
+.bubble a,
+.bubble a:visited {
+  color: inherit;
+  text-decoration: underline;
+}
+
 .input-bar {
   padding: 14px 20px;
   border-top: 1px solid #2a2a30;

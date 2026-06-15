@@ -33,8 +33,12 @@ def _sessao_id() -> str:
     return sid
 
 
-def _gerar_resposta(user_message: str, historico: list[dict]) -> str:
-    """Decide a resposta: Spotify (base) → LLM com memória → NLTK."""
+def _gerar_resposta(user_message: str, historico: list[dict]) -> tuple[str, str]:
+    """Decide a resposta e devolve (texto, origem).
+
+    origem indica qual subsistema respondeu: "spotify", "spotify+llm",
+    "llm" ou "nltk" — usado para exibir o selo de origem no chat.
+    """
     # ── 1ª tentativa: Spotify ─────────────────────────────
     intent, payload = intents.detect(user_message)
 
@@ -42,7 +46,7 @@ def _gerar_resposta(user_message: str, historico: list[dict]) -> str:
         if intent == "track":
             tracks = spotify.search_track(payload)
             if tracks:
-                return fmt.tracks(tracks, payload)
+                return fmt.tracks(tracks, payload), "spotify"
 
         elif intent == "artist_info":
             perfil  = spotify.search_artist(payload)
@@ -51,46 +55,49 @@ def _gerar_resposta(user_message: str, historico: list[dict]) -> str:
                 completo = spotify.get_artist_profile(perfil["name"])
                 if completo:
                     resumo = llm_bot.resumo_artista(completo["name"])
-                    return fmt.artist(completo, resumo)
+                    origem = "spotify+llm" if resumo else "spotify"
+                    return fmt.artist(completo, resumo), origem
 
             resumo = llm_bot.resumo_artista(payload.title())
             if resumo:
-                return fmt.artist_summary(payload.title(), resumo)
+                return fmt.artist_summary(payload.title(), resumo), "llm"
 
         elif intent == "artist":
             info = spotify.get_artist_profile(payload)
             if info:
-                return fmt.artist(info)
+                return fmt.artist(info), "spotify"
 
         elif intent == "album":
             info = spotify.search_album(payload)
             if info:
-                return fmt.album(info)
+                return fmt.album(info), "spotify"
 
         elif intent == "discography":
             info = spotify.get_discography(payload)
             if info:
-                return fmt.discography(info)
+                return fmt.discography(info), "spotify"
 
         elif intent == "playlist":
             playlists = spotify.search_playlists(payload)
             if playlists:
-                return fmt.playlists(playlists, payload)
+                return fmt.playlists(playlists, payload), "spotify"
 
         elif intent == "recommendations":
             seed = payload or random.choice(spotify.SEED_ARTISTS)
             tracks = spotify.get_recommendations(seed)
             if tracks:
-                return fmt.recommendations(tracks, seed)
+                return fmt.recommendations(tracks, seed), "spotify"
 
     except Exception:
         logger.exception("Erro ao consultar o Spotify (intent=%s)", intent)
 
+    # ── 2ª tentativa: LLM (HuggingFace) com memória ───────
     resposta_llm = llm_bot.responder(user_message, historico)
     if resposta_llm:
-        return resposta_llm
+        return resposta_llm, "llm"
 
-    return nltk_bot.responder(user_message)
+    # ── 3ª tentativa: chatbot de padrões (NLTK) — última opção ──
+    return nltk_bot.responder(user_message), "nltk"
 
 
 @app.route('/chat', methods=['POST'])
@@ -104,11 +111,12 @@ def chat():
     sid       = _sessao_id()
     historico = memory.get(sid)
 
-    resposta = _gerar_resposta(user_message, historico)
+    resposta, origem = _gerar_resposta(user_message, historico)
+    logger.info("Resposta gerada por: %s", origem)
 
     # Guarda o turno (usuário + bot) para dar contexto às próximas mensagens.
     memory.registrar(sid, user_message, resposta)
-    return jsonify({'response': resposta})
+    return jsonify({'response': resposta, 'origem': origem})
 
 
 @app.route('/reset', methods=['POST'])

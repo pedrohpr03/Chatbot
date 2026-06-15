@@ -13,6 +13,13 @@ NAO_ARTISTAS = {
     "cantora", "você", "voce", "vc", "tu", "ele", "ela", "isso", "isto",
 }
 
+ATIVIDADES = {
+    "treinar", "treino", "malhar", "academia", "correr", "corrida", "pedalar",
+    "relaxar", "descansar", "dormir", "meditar", "estudar", "concentrar",
+    "trabalhar", "trabalho", "foco", "festa", "balada", "dancar", "dançar",
+    "churrasco", "viajar", "viagem", "dirigir", "cozinhar",
+}
+
 
 def detect(message: str) -> tuple[str | None, str | None]:
     """
@@ -28,6 +35,10 @@ def detect(message: str) -> tuple[str | None, str | None]:
     )
     if m:
         return "playlist", m.group(1).strip()
+
+    m = re.search(r"\b(?:para|pra)\s+(?:a\s+|o\s+)?([a-zà-ú]+)", msg)
+    if m and m.group(1) in ATIVIDADES:
+        return "playlist", m.group(1)
 
     # Buscar faixa: "buscar música X", "toca X", "ouvir X"
     m = re.search(
@@ -64,7 +75,9 @@ def detect(message: str) -> tuple[str | None, str | None]:
         msg,
     )
     if m:
-        return "discography", m.group(1).strip()
+        termo = m.group(1).strip()
+        if not termo.startswith(("para ", "pra ")):
+            return "discography", termo
 
     # Buscar álbum: "buscar álbum X", "álbum X", "buscar disco X"
     m = re.search(
@@ -72,7 +85,9 @@ def detect(message: str) -> tuple[str | None, str | None]:
         msg,
     )
     if m:
-        return "album", m.group(1).strip()
+        termo = m.group(1).strip()
+        if not termo.startswith(("para ", "pra ")):
+            return "album", termo
 
     # Recomendações baseadas num artista: "recomendações parecidas com X", "músicas similares a X"
     m = re.search(
