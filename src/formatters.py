@@ -8,6 +8,11 @@ evitar injeção de HTML/JS (XSS), já que o frontend usa innerHTML.
 """
 import html
 
+# Quantas linhas da letra são exibidas no chat. Mostramos só um trecho por se
+# tratar de conteúdo protegido por direitos autorais — a letra completa fica no
+# link para o Genius. Para um projeto acadêmico, basta aumentar este valor.
+MAX_LINHAS_LETRA = 8
+
 
 def _e(value) -> str:
     """Escapa um valor para inserção segura no HTML."""
@@ -136,6 +141,32 @@ def playlists(items: list[dict], query: str) -> str:
         dono = f" <small>por {_e(p['owner'])}</small>" if p.get("owner") else ""
         linhas.append(f"{thumb}<a href='{_e(p['url'])}' target='_blank'>{_e(p['name'])}</a>{dono}")
     return "<br>".join(linhas)
+
+
+def lyrics(info: dict) -> str:
+    """Exibe um TRECHO da letra (Genius) + link para a letra completa.
+
+    Mostramos apenas as primeiras `MAX_LINHAS_LETRA` linhas: letra é conteúdo
+    protegido, então o padrão seguro é trecho + link para a página do Genius.
+    """
+    if not info:
+        return "Não encontrei a letra dessa música."
+
+    linhas = info["text"].strip().split("\n")
+    trecho = "<br>".join(_e(linha) for linha in linhas[:MAX_LINHAS_LETRA])
+
+    link = ""
+    if info.get("url"):
+        reticencias = "… " if len(linhas) > MAX_LINHAS_LETRA else ""
+        link = (
+            f"<br>{reticencias}<a href='{_e(info['url'])}' target='_blank'>"
+            f"ver letra completa no Genius</a>"
+        )
+
+    return (
+        f"🎵 <b>{_e(info['song'])}</b> — {_e(info['artist'])}<br><br>"
+        f"{trecho}{link}"
+    )
 
 
 def recommendations(items: list[dict], seed: str) -> str:

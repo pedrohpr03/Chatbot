@@ -5,6 +5,7 @@ import random
 import logging
 
 from src import spotify_client as spotify
+from src import genius_client as genius
 from src import formatters as fmt
 from src import intents
 from src import llm_bot
@@ -37,13 +38,21 @@ def _gerar_resposta(user_message: str, historico: list[dict]) -> tuple[str, str]
     """Decide a resposta e devolve (texto, origem).
 
     origem indica qual subsistema respondeu: "spotify", "spotify+llm",
-    "llm" ou "nltk" — usado para exibir o selo de origem no chat.
+    "genius", "llm" ou "nltk" — usado para exibir o selo de origem no chat.
     """
-    # ── 1ª tentativa: Spotify ─────────────────────────────
+    # ── 1ª tentativa: base de dados (Spotify / Genius) ────
     intent, payload = intents.detect(user_message)
 
     try:
-        if intent == "track":
+        if intent == "lyrics":
+            # A letra vem SEMPRE do Genius (a "base" deste intent), nunca da
+            # LLM. Se não achar, cai no fallback (que não pode inventar letra).
+            musica, artista = payload
+            info = genius.get_lyrics(artista, musica)
+            if info:
+                return fmt.lyrics(info), "genius"
+
+        elif intent == "track":
             tracks = spotify.search_track(payload)
             if tracks:
                 return fmt.track(tracks[0]), "spotify"

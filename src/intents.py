@@ -21,12 +21,43 @@ ATIVIDADES = {
 }
 
 
-def detect(message: str) -> tuple[str | None, str | None]:
+def _separa_musica_artista(texto: str) -> tuple[str, str | None]:
+    """Separa 'música do/da artista' em (música, artista).
+
+    Só tratamos ' do '/' da ' como separador de artista — e nunca ' de ', que
+    aparece com frequência dentro do nome da música (ex.: 'Garota de Ipanema').
+    Usa a ÚLTIMA ocorrência, então 'Garota de Ipanema do Tom Jobim' vira
+    ('Garota de Ipanema', 'Tom Jobim'). Sem separador, o artista volta None.
     """
-    Retorna (intent, payload) se a mensagem for um comando Spotify.
+    m = re.search(r"^(.*\S)\s+d[oa]\s+(\S.*)$", texto)
+    if m:
+        return m.group(1).strip(), m.group(2).strip()
+    return texto.strip(), None
+
+
+def detect(message: str) -> tuple[str | None, object | None]:
+    """
+    Retorna (intent, payload) se a mensagem for um comando Spotify/Genius.
     Retorna (None, None) caso contrário — o NLTK assume o controle.
+
+    O payload costuma ser uma string (o termo buscado); para o intent "lyrics"
+    é a tupla (musica, artista_ou_None).
     """
     msg = message.lower().strip()
+
+    # Letra de música (Genius): "letra de X", "qual a letra de X",
+    # "letra da música X", "letra de X do/da <artista>".
+    # Vem antes das demais porque "letra" é específico e não rouba outros intents.
+    m = re.search(
+        r"letra\s+(?:completa\s+)?(?:d[ao]\s+m[úu]sica\s+|de\s+|d[ao]\s+)?(.+)",
+        msg,
+    )
+    if m:
+        resto = m.group(1).strip(" ?!.")
+        if resto:
+            musica, artista = _separa_musica_artista(resto)
+            if musica:
+                return "lyrics", (musica, artista)
 
     # Playlists: "playlist de rock", "playlists para relaxar", "playlist pra treinar"
     m = re.search(
