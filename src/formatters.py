@@ -8,9 +8,7 @@ evitar injeção de HTML/JS (XSS), já que o frontend usa innerHTML.
 """
 import html
 
-# Quantas linhas da letra são exibidas no chat. Mostramos só um trecho por se
-# tratar de conteúdo protegido por direitos autorais — a letra completa fica no
-# link para o Genius. Para um projeto acadêmico, basta aumentar este valor.
+
 MAX_LINHAS_LETRA = 8
 
 
@@ -56,8 +54,7 @@ def artist(info: dict, resumo: str | None = None) -> str:
     if not info:
         return "Artista não encontrado."
 
-    # `resumo` (texto curto da LLM) é opcional: a base do Spotify não guarda
-    # biografia, então quando há um, ele apresenta o artista acima do conteúdo.
+    
     bloco_resumo = ""
     if resumo:
         texto = _e(resumo).replace("\n", "<br>")
@@ -143,6 +140,29 @@ def playlists(items: list[dict], query: str) -> str:
     return "<br>".join(linhas)
 
 
+def _linhas_trecho(info: dict) -> tuple[list[str], bool]:
+    """Primeiras `MAX_LINHAS_LETRA` linhas da letra + se há mais além do trecho."""
+    linhas = info["text"].strip().split("\n")
+    return linhas[:MAX_LINHAS_LETRA], len(linhas) > MAX_LINHAS_LETRA
+
+
+def trecho_letra_texto(info: dict) -> str:
+    """Trecho da letra em texto puro (\\n entre linhas) — para enviar ao tradutor."""
+    linhas, _ = _linhas_trecho(info)
+    return "\n".join(linhas)
+
+
+def _link_letra(info: dict, tem_mais: bool) -> str:
+    """Link para a letra completa no Genius ('…' quando o trecho foi cortado)."""
+    if not info.get("url"):
+        return ""
+    reticencias = "… " if tem_mais else ""
+    return (
+        f"<br>{reticencias}<a href='{_e(info['url'])}' target='_blank'>"
+        f"ver letra completa no Genius</a>"
+    )
+
+
 def lyrics(info: dict) -> str:
     """Exibe um TRECHO da letra (Genius) + link para a letra completa.
 
@@ -152,20 +172,25 @@ def lyrics(info: dict) -> str:
     if not info:
         return "Não encontrei a letra dessa música."
 
-    linhas = info["text"].strip().split("\n")
-    trecho = "<br>".join(_e(linha) for linha in linhas[:MAX_LINHAS_LETRA])
-
-    link = ""
-    if info.get("url"):
-        reticencias = "… " if len(linhas) > MAX_LINHAS_LETRA else ""
-        link = (
-            f"<br>{reticencias}<a href='{_e(info['url'])}' target='_blank'>"
-            f"ver letra completa no Genius</a>"
-        )
-
+    linhas, tem_mais = _linhas_trecho(info)
+    trecho = "<br>".join(_e(linha) for linha in linhas)
     return (
         f"🎵 <b>{_e(info['song'])}</b> — {_e(info['artist'])}<br><br>"
-        f"{trecho}{link}"
+        f"{trecho}{_link_letra(info, tem_mais)}"
+    )
+
+
+def lyrics_traduzida(info: dict, traducao: str) -> str:
+    """Exibe o TRECHO da letra traduzido (pt) + link para o original no Genius."""
+    if not info:
+        return "Não encontrei a letra dessa música."
+
+    _, tem_mais = _linhas_trecho(info)
+    corpo = "<br>".join(_e(linha) for linha in traducao.strip().split("\n"))
+    nota = "<br><br><small>🌐 Tradução automática para português (apenas o trecho)</small>"
+    return (
+        f"🎵 <b>{_e(info['song'])}</b> — {_e(info['artist'])}<br><br>"
+        f"{corpo}{nota}{_link_letra(info, tem_mais)}"
     )
 
 

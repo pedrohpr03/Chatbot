@@ -38,7 +38,7 @@ def _gerar_resposta(user_message: str, historico: list[dict]) -> tuple[str, str]
     """Decide a resposta e devolve (texto, origem).
 
     origem indica qual subsistema respondeu: "spotify", "spotify+llm",
-    "genius", "llm" ou "nltk" — usado para exibir o selo de origem no chat.
+    "genius", "genius+llm", "llm" ou "nltk" — usado para exibir o selo de origem.
     """
     # ── 1ª tentativa: base de dados (Spotify / Genius) ────
     intent, payload = intents.detect(user_message)
@@ -47,9 +47,14 @@ def _gerar_resposta(user_message: str, historico: list[dict]) -> tuple[str, str]
         if intent == "lyrics":
             # A letra vem SEMPRE do Genius (a "base" deste intent), nunca da
             # LLM. Se não achar, cai no fallback (que não pode inventar letra).
-            musica, artista = payload
+            musica, artista, traduzir = payload
             info = genius.get_lyrics(artista, musica)
             if info:
+                if traduzir:
+                    # Tradução (→ pt): o LLM só verte o TRECHO já obtido do Genius.
+                    traducao = llm_bot.traduzir(fmt.trecho_letra_texto(info))
+                    if traducao:
+                        return fmt.lyrics_traduzida(info, traducao), "genius+llm"
                 return fmt.lyrics(info), "genius"
 
         elif intent == "track":

@@ -20,7 +20,8 @@ _SEM_RESPOSTA = "__SEM_RESPOSTA__"
 
 _SYSTEM_PROMPT = (
     "Você é o ChatBotMusic, um assistente apaixonado por música. "
-    "Converse em português do Brasil, de forma curta (no máximo 3 frases), "
+    "Responda SEMPRE no mesmo idioma da mensagem do usuário (português do "
+    "Brasil ou inglês), de forma curta (no máximo 3 frases), "
     "calorosa e empolgada. Seu tema central é música: artistas, bandas, "
     "gêneros, álbuns, história e curiosidades musicais.\n"
     "REGRA DE OURO: nunca invente fatos. Se perguntarem sobre alguém que NÃO é "
@@ -43,9 +44,7 @@ _SYSTEM_PROMPT = (
     "Nesses casos não invente nem chute: apenas devolva a sentinela."
 )
 
-# Regra: decide músico ou não Antes de responder,
-# com exemplos nos dois sentidos. Sem isso, modelos menores inventam uma
-# biografia musical para qualquer nome (ex.: tratam um jogador como cantor)
+
 _RESUMO_SYS = (
     "Você avalia um nome e decide se é de um MÚSICO ou BANDA (cantor, rapper, "
     "DJ, compositor, instrumentista ou grupo musical).\n"
@@ -113,7 +112,7 @@ def _chat(system: str | None, user: str, temperature: float, max_tokens: int,
         )
         return (resp.choices[0].message.content or "").strip()
     except Exception:
-        # Cobre cota esgotada (429), modelo indisponível, rede, etc.
+        
         logger.exception("Erro ao consultar o modelo no HuggingFace.")
         return None
 
@@ -140,6 +139,26 @@ def resumo_artista(nome: str) -> str | None:
     if not texto or _eh_sentinela(texto):
         return None
     return texto
+
+
+def traduzir(texto: str) -> str | None:
+    """Traduz um texto (ex.: trecho de letra) para português via LLM.
+
+    Usado só para TRADUZIR conteúdo já obtido do Genius — o LLM não inventa
+    nem completa a letra, apenas verte o trecho recebido. Devolve a tradução,
+    ou None se o LLM não estiver disponível ou der erro.
+    """
+    if not texto or not texto.strip():
+        return None
+    sistema = (
+        "Você é um tradutor. Traduza o texto do usuário para o português do "
+        "Brasil. Preserve as quebras de linha. Responda APENAS com a tradução, "
+        "sem aspas, títulos, comentários ou qualquer texto extra."
+    )
+    traducao = _chat(sistema, texto, temperature=0.3, max_tokens=600)
+    if not traducao or _eh_sentinela(traducao):
+        return None
+    return traducao
 
 
 def responder(message: str, history: list[dict] | None = None) -> str | None:
